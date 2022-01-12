@@ -1,148 +1,264 @@
 #include QMK_KEYBOARD_H
+#include "haryoiro_color.h"
 
-enum layer_number {
-  _QWERTY = 0,
-  _LOWER,
-  _RAISE,
-  _ADJUST,
+/*---------------------
+ * COMBO KEYS
+  ---------------------*/
+#ifdef COMBO_ENABLE
+enum combos
+{
+  CB_LEFT,
+  CB_DOWN,
+  CB_UP,
+  CB_RIGHT,
+  CB_CIRC,
+     // JP配列にて通常 <"~"チルダ> Shift押下時 <"^"ハット>が入力されるコンボキー
 };
+
+const uint16_t PROGMEM cr_left_combo[] = {KC_LCTL, KC_LEFT, COMBO_END};
+const uint16_t PROGMEM cr_down_combo[] = {KC_LCTL, KC_DOWN, COMBO_END};
+const uint16_t PROGMEM cr_up_combo[]   = {KC_LCTL, KC_UP,   COMBO_END};
+const uint16_t PROGMEM cr_rght_combo[] = {KC_LCTL, KC_RGHT, COMBO_END};
+const uint16_t PROGMEM circtil_combo[] = {KC_LSFT, KC_CIRC, COMBO_END};
+
+combo_t key_combos[COMBO_COUNT] = {
+    [CB_LEFT ]  = COMBO(cr_left_combo,  KC_HOME),
+    [CB_DOWN ]  = COMBO(cr_down_combo,  KC_PGDN),
+    [CB_UP   ]  = COMBO(cr_up_combo,    KC_PGUP),
+    [CB_RIGHT]  = COMBO(cr_rght_combo,  KC_END),
+    [CB_CIRC ]  = COMBO(circtil_combo,  KC_TILD),
+};
+#endif
+
+/*---------------------
+ * LAYER DEFINITIONS
+  ---------------------*/
+enum layer_number
+{
+    _DEFAULT = 0,       // Windows向け配列。
+    _MAC,           // Mac向け配列
+    _FUNCTION,      // Functionキー
+    _ALLOW,         // VIMLIKE移動キー
+    _SYMBOL,        // 記号
+    _TRANSPARENT,   // なにもないレイヤー。レイアウト参考用
+    _DEVELOP        // デバッグ系
+};
+
+enum layer_mo {
+    DEFAULT      = MO(_DEFAULT),
+    MAC      = MO(_MAC),
+    FUNCTION = MO(_FUNCTION),
+    ALLOW    = MO(_ALLOW),
+    SYMBOL   = MO(_SYMBOL),
+};
+
+/*---------------------
+ * CUSTOM KEYS
+  ---------------------*/
+enum custom_keys {
+  WINMAC,
+};
+
+// clang-format off
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-/* QWERTY
- * ,-----------------------------------------.                    ,-----------------------------------------.
- * | ESC  |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | Tab  |   Q  |   W  |   E  |   R  |   T  |                    |   Y  |   U  |   I  |   O  |   P  |  -   |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |LCTRL |   A  |   S  |   D  |   F  |   G  |-------.    ,-------|   H  |   J  |   K  |   L  |   ;  |  '   |
- * |------+------+------+------+------+------|   [   |    |    ]  |------+------+------+------+------+------|
- * |LShift|   Z  |   X  |   C  |   V  |   B  |-------|    |-------|   N  |   M  |   ,  |   .  |   /  |RShift|
- * `-----------------------------------------/       /     \      \-----------------------------------------'
- *                   | LAlt | LGUI |LOWER | /Space  /       \Enter \  |RAISE |BackSP| RGUI |
- *                   |      |      |      |/       /         \      \ |      |      |      |
- *                   `----------------------------'           '------''--------------------'
- */
+    /*
+    * DEFAULT // JIS配列デフォルトキーマップ
+    */
+    [_DEFAULT] = LAYOUT(
+        KC_LGUI,  KC_1,     KC_2,     KC_3,     KC_4,     KC_5,                         KC_6,     KC_7,     KC_8,    KC_MINS,  KC_CIRC,    KC_GRV,
+        KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,                         KC_Y,     KC_U,     KC_I,    KC_O,     KC_P,      KC_RO,
+        KC_LSFT,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,                         KC_H,     KC_J,     KC_K,    KC_L,     KC_LBRC,   KC_RBRC,
+        KC_LCTL,  KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     XXXXXXX,  XXXXXXX,  KC_N,     KC_M,     KC_COMM, KC_DOT,   KC_SLSH,   KC_QUOT,
+                                      KC_LALT,  KC_ESC,   SYMBOL,   KC_SPC,   KC_ENT,   ALLOW,    KC_BSPC,  FUNCTION),
 
- [_QWERTY] = LAYOUT( \
-  KC_ESC,   KC_1,   KC_2,    KC_3,    KC_4,    KC_5,                     KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_GRV, \
-  KC_TAB,   KC_Q,   KC_W,    KC_E,    KC_R,    KC_T,                     KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_MINS, \
-  KC_LCTRL, KC_A,   KC_S,    KC_D,    KC_F,    KC_G,                     KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, \
-  KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_V,    KC_B, KC_LBRC,  KC_RBRC,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,  KC_RSFT, \
-                        KC_LALT, KC_LGUI, MO(_LOWER), KC_SPC, KC_ENT, MO(_RAISE), KC_BSPC, KC_RGUI \
-),
-/* LOWER
- * ,-----------------------------------------.                    ,-----------------------------------------.
- * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |                    |  F7  |  F8  |  F9  | F10  | F11  | F12  |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |   `  |   !  |   @  |   #  |   $  |   %  |-------.    ,-------|   ^  |   &  |   *  |   (  |   )  |   -  |
- * |------+------+------+------+------+------|   [   |    |    ]  |------+------+------+------+------+------|
- * |      |      |      |      |      |      |-------|    |-------|      |   _  |   +  |   {  |   }  |   |  |
- * `-----------------------------------------/       /     \      \-----------------------------------------'
- *                   | LAlt | LGUI |LOWER | /Space  /       \Enter \  |RAISE |BackSP| RGUI |
- *                   |      |      |      |/       /         \      \ |      |      |      |
- *                   `----------------------------'           '------''--------------------'
- */
-[_LOWER] = LAYOUT( \
-  _______, _______, _______, _______, _______, _______,                   _______, _______, _______,_______, _______, _______,\
-  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,                     KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, \
-  KC_GRV, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                   KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_TILD, \
-  _______, _______, _______, _______, _______, _______, _______, _______, XXXXXXX, KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE, \
-                             _______, _______, _______, _______, _______,  _______, _______, _______\
-),
-/* RAISE
- * ,-----------------------------------------.                    ,-----------------------------------------.
- * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |   `  |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |      |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |-------.    ,-------|      | Left | Down |  Up  |Right |      |
- * |------+------+------+------+------+------|   [   |    |    ]  |------+------+------+------+------+------|
- * |  F7  |  F8  |  F9  | F10  | F11  | F12  |-------|    |-------|   +  |   -  |   =  |   [  |   ]  |   \  |
- * `-----------------------------------------/       /     \      \-----------------------------------------'
- *                   | LAlt | LGUI |LOWER | /Space  /       \Enter \  |RAISE |BackSP| RGUI |
- *                   |      |      |      |/       /         \      \ |      |      |      |
- *                   `----------------------------'           '------''--------------------'
- */
+    /*
+    * MAC // Macのみに適用されるレイヤー
+    */
+    [_MAC] = LAYOUT(
+        KC_ESC,   _______,  _______,  _______,  _______,  _______,                      _______,  _______,  _______,  _______,  _______,    _______,
+        _______,  _______,  _______,  _______,  _______,  _______,                      _______,  _______,  _______,  _______,  _______,   KC_LBRC,
+        KC_LSFT,  _______,  _______,  _______,  _______,  _______,                      _______,  _______,  _______,  _______,  KC_RBRC,   KC_NUHS,
+        KC_LGUI,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  KC_NUHS,   KC_SLSH,
+                                      _______,  KC_LCTL,  _______,  _______,  _______,  _______,  _______,  _______),
+        // KC_ESC,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,                         KC_6,     KC_7,     KC_8,    KC_MINS,  KC_CIRC,    KC_GRV,
+        // KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,                         KC_Y,     KC_U,     KC_I,    KC_O,     KC_P,      KC_LBRC,
+        // KC_LSFT,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,                         KC_H,     KC_J,     KC_K,    KC_L,     KC_RBRC,   KC_NUHS,
+        // KC_LGUI,  KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     XXXXXXX,  XXXXXXX,  KC_N,     KC_M,     KC_COMM, KC_DOT,   KC_NUHS,   KC_SLSH,
+        //                               KC_LOPT,  KC_LCTL,  SYMBOL,   KC_SPC,   KC_ENT,   ALLOW,    KC_BSPC,  FUNCTION),
 
-[_RAISE] = LAYOUT( \
-  _______, _______, _______, _______, _______, _______,                     _______, _______, _______, _______, _______, _______, \
-  KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                        KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______, \
-  KC_F1,  KC_F2,    KC_F3,   KC_F4,   KC_F5,   KC_F6,                       XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, XXXXXXX, \
-  KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,   _______, _______,  KC_PLUS, KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_BSLS, \
-                             _______, _______, _______,  _______, _______,  _______, _______, _______ \
-),
-/* ADJUST
- * ,-----------------------------------------.                    ,-----------------------------------------.
- * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |      |      |      |      |      |      |-------.    ,-------|      |      |RGB ON| HUE+ | SAT+ | VAL+ |
- * |------+------+------+------+------+------|       |    |       |------+------+------+------+------+------|
- * |      |      |      |      |      |      |-------|    |-------|      |      | MODE | HUE- | SAT- | VAL- |
- * `-----------------------------------------/       /     \      \-----------------------------------------'
- *                   | LAlt | LGUI |LOWER | /Space  /       \Enter \  |RAISE |BackSP| RGUI |
- *                   |      |      |      |/       /         \      \ |      |      |      |
- *                   `----------------------------'           '------''--------------------'
- */
-  [_ADJUST] = LAYOUT( \
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,\
-                             _______, _______, _______, _______, _______,  _______, _______, _______ \
-  )
+    /*
+    * FUNCTION // Functionキーが格納されている。
+    */
+    [_FUNCTION] = LAYOUT(
+        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,   WINMAC,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+                                      _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______),
+
+    [_ALLOW] = LAYOUT(
+        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,                      KC_HOME,  KC_PGDN,  KC_PGUP,  KC_END,   XXXXXXX,  XXXXXXX,
+        KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,                        KC_LEFT,  KC_DOWN,  KC_UP,    KC_RGHT,  XXXXXXX,  XXXXXXX,
+        KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,   XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+                                      _______,  _______,  _______,  _______,  _______,  _______, _______, _______),
+
+    [_SYMBOL] = LAYOUT(
+        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_MINS,  KC_RO,    KC_JYEN,
+        _______,  KC_1,     KC_2,     KC_3,     KC_4,     KC_5,                         KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_QUOT,
+        _______,  KC_EXLM,  KC_DQUO,  KC_HASH,  KC_DLR,   KC_PERC,                      KC_CIRC,  KC_AMPR,  KC_ASTR,  KC_LPRN,  KC_RPRN,  KC_SCLN,
+        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_RBRC,  KC_NUHS,  KC_LBRC,  KC_SLSH,
+                                      _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______),
+
+    /*
+    * DEVELOP //
+    */
+    [_DEVELOP] = LAYOUT(
+        _______,  _______,  _______,  _______,  _______,  RESET,                        _______,  _______,  _______,  _______,  _______,  _______,
+        _______,  _______,  _______,  _______,  _______,  DEBUG,                        _______,  _______,  _______,  _______,  _______,  _______,
+        _______,  _______,  _______,  _______,  _______,  EEP_RST,                      _______,  _______,  _______,  _______,  _______,  _______,
+        _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,
+                                      _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______),
+
+    /*
+    * TRANSPARENT //
+    */
+    [_TRANSPARENT] = LAYOUT(
+        _______,  _______,  _______,  _______,  _______,  _______,                      _______,  _______,  _______,  _______,  _______,  _______,
+        _______,  _______,  _______,  _______,  _______,  _______,                      _______,  _______,  _______,  _______,  _______,  _______,
+        _______,  _______,  _______,  _______,  _______,  _______,                      _______,  _______,  _______,  _______,  _______,  _______,
+        _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,
+                                      _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______)
+
 };
 
-layer_state_t layer_state_set_user(layer_state_t state) {
-  return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
-}
+// clang-format on
 
-//SSD1306 OLED update loop, make sure to enable OLED_ENABLE=yes in rules.mk
-#ifdef OLED_ENABLE
 
-oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  if (!is_keyboard_master())
-    return OLED_ROTATION_180;  // flips the display 180 degrees if offhand
-  return rotation;
-}
+bool MAC_MODE = true;
 
-// When you add source files to SRC in rules.mk, you can use functions.
 const char *read_layer_state(void);
 const char *read_logo(void);
 void set_keylog(uint16_t keycode, keyrecord_t *record);
 const char *read_keylog(void);
 const char *read_keylogs(void);
 
-// const char *read_mode_icon(bool swap);
-// const char *read_host_led_state(void);
-// void set_timelog(void);
-// const char *read_timelog(void);
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch(keycode) {
+        case WINMAC:
+            if (record->event.pressed) {
+                MAC_MODE = !MAC_MODE;
+                if (!MAC_MODE) {
+                    layer_off(_MAC);
+                }
+            }
+            return false;
+            break;
+    }
+  return true;
+}
+
+uint32_t layer_state_set_keymap (uint32_t state) {
+  return state;
+}
+
+/*---------------------
+ * OLED
+  ---------------------*/
+#ifdef OLED_ENABLE
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+  if (!is_keyboard_master())
+    return OLED_ROTATION_180;
+  return rotation;
+}
 
 void oled_task_user(void) {
   if (is_keyboard_master()) {
-    // If you want to change the display of OLED, you need to change here
     oled_write_ln(read_layer_state(), false);
     oled_write_ln(read_keylog(), false);
     oled_write_ln(read_keylogs(), false);
-    //oled_write_ln(read_mode_icon(keymap_config.swap_lalt_lgui), false);
-    //oled_write_ln(read_host_led_state(), false);
-    //oled_write_ln(read_timelog(), false);
   } else {
     oled_write(read_logo(), false);
   }
 }
-#endif // OLED_ENABLE
-
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  if (record->event.pressed) {
-#ifdef OLED_ENABLE
-    set_keylog(keycode, record);
 #endif
-    // set_timelog();
-  }
-  return true;
+
+
+/*---------------------
+ * RGB LED
+  ---------------------*/
+
+// void matrix_init_user(void) {
+// }
+#ifdef RGBLIGHT_ENABLE
+// { start, length, color }
+const rgblight_segment_t PROGMEM default_layer[]  = RGBLIGHT_LAYER_SEGMENTS(
+  // left
+  { 0,  6, GRAD_TEAL_0 },
+  { 6,  6, GRAD_TEAL_1 },
+  { 12, 6, GRAD_TEAL_2 },
+  { 18, 6, GRAD_TEAL_3 },
+  { 28, 1, GRAD_TEAL_3 },
+  { 24, 5, GRAD_TEAL_4 },
+  // right
+  { 29, 6, GRAD_TEAL_0 },
+  { 35, 6, GRAD_TEAL_1 },
+  { 41, 6, GRAD_TEAL_2 },
+  { 47, 6, GRAD_TEAL_3 },
+  { 57, 1, GRAD_TEAL_3 },
+  { 53, 4, GRAD_TEAL_4 }
+);
+const rgblight_segment_t PROGMEM mac_layer[]      = RGBLIGHT_LAYER_SEGMENTS(  {0, 58, HSV_TEAL } );
+const rgblight_segment_t PROGMEM function_layer[] = RGBLIGHT_LAYER_SEGMENTS(  {0, 58, HSV_RED  } );
+const rgblight_segment_t PROGMEM allow_layer[]    = RGBLIGHT_LAYER_SEGMENTS(  {0, 58, HSV_CYAN } );
+const rgblight_segment_t PROGMEM symbol_layer[]   = RGBLIGHT_LAYER_SEGMENTS(  {0, 58, HSV_TEAL } );
+
+const rgblight_segment_t* const PROGMEM _rgb_layers[] = RGBLIGHT_LAYERS_LIST(
+    default_layer,
+    mac_layer,
+    allow_layer,
+    function_layer,
+    symbol_layer
+);
+// -> keyboard_post_init_user
+
+#endif
+
+void eeconfig_init_user(void) {
+    rgblight_enable_noeeprom();
+    rgblight_sethsv_noeeprom(HSV_TEAL);
+}
+
+layer_state_t default_layer_state_set_user(layer_state_t state) {
+    rgblight_set_layer_state(0, layer_state_cmp(state, _DEFAULT));
+    return state;
+}
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+#ifdef RGBLIGHT_ENABLE
+    rgblight_set_layer_state(0, layer_state_cmp(state, _DEFAULT ));
+    rgblight_set_layer_state(1, layer_state_cmp(state, _MAC     ));
+    rgblight_set_layer_state(2, layer_state_cmp(state, _FUNCTION));
+    rgblight_set_layer_state(3, layer_state_cmp(state, _ALLOW   ));
+    rgblight_set_layer_state(4, layer_state_cmp(state, _SYMBOL  ));
+#endif
+  return state;
+}
+
+
+/*
+* キーボード初期化処理
+*/
+void keyboard_post_init_user(void) {
+  rgblight_layers = _rgb_layers;
+  // #if defined(RGBLIGHT_ENABLE)
+  //   int i = 0;
+  //   for (i = 0; i < RGBLED_NUM; i++) {
+  //     // 1~3引数にRGB値を入れる。
+  //     setrgb(30, 187, 215, (LED_TYPE *)&led[i]);
+  //   }
+  //   rgblight_set();
+  // #endif
 }

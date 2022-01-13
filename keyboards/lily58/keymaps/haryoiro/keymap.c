@@ -33,24 +33,22 @@ combo_t key_combos[COMBO_COUNT] = {
 /*---------------------
  * LAYER DEFINITIONS
   ---------------------*/
-enum layer_number
-{
+enum layer_number {
     _DEFAULT = 0,       // Windows向け配列。
     _MAC,           // Mac向け配列
     _FUNCTION,      // Functionキー
     _ALLOW,         // VIMLIKE移動キー
     _SYMBOL,        // 記号
     _TRANSPARENT,   // なにもないレイヤー。レイアウト参考用
-    _DEVELOP        // デバッグ系
 };
 
-enum layer_mo {
-    DEFAULT      = MO(_DEFAULT),
-    MAC      = MO(_MAC),
-    FUNCTION = MO(_FUNCTION),
-    ALLOW    = MO(_ALLOW),
-    SYMBOL   = MO(_SYMBOL),
-};
+
+#define DEFAULT  MO(_DEFAULT)
+#define MAC      MO(_MAC)
+#define FUNCTION MO(_FUNCTION)
+#define ALLOW    MO(_ALLOW)
+#define SYMBOL   MO(_SYMBOL)
+
 
 /*---------------------
  * CUSTOM KEYS
@@ -89,13 +87,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         //                               KC_LOPT,  KC_LCTL,  SYMBOL,   KC_SPC,   KC_ENT,   ALLOW,    KC_BSPC,  FUNCTION),
 
     /*
-    * FUNCTION // Functionキーが格納されている。
+    * FUNCTION
     */
     [_FUNCTION] = LAYOUT(
-        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
-        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
-        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
-        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,   WINMAC,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  RGB_TOG,                      RGB_TOG,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  RESET,                        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  DEBUG,                        XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  EEP_RST,   WINMAC,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
                                       _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______),
 
     [_ALLOW] = LAYOUT(
@@ -113,16 +111,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                       _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______),
 
     /*
-    * DEVELOP //
-    */
-    [_DEVELOP] = LAYOUT(
-        _______,  _______,  _______,  _______,  _______,  RESET,                        _______,  _______,  _______,  _______,  _______,  _______,
-        _______,  _______,  _______,  _______,  _______,  DEBUG,                        _______,  _______,  _______,  _______,  _______,  _______,
-        _______,  _______,  _______,  _______,  _______,  EEP_RST,                      _______,  _______,  _______,  _______,  _______,  _______,
-        _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,
-                                      _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______),
-
-    /*
     * TRANSPARENT //
     */
     [_TRANSPARENT] = LAYOUT(
@@ -136,14 +124,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // clang-format on
 
-
 bool MAC_MODE = true;
-
-const char *read_layer_state(void);
-const char *read_logo(void);
-void set_keylog(uint16_t keycode, keyrecord_t *record);
-const char *read_keylog(void);
-const char *read_keylogs(void);
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch(keycode) {
@@ -165,28 +146,6 @@ uint32_t layer_state_set_keymap (uint32_t state) {
 }
 
 /*---------------------
- * OLED
-  ---------------------*/
-#ifdef OLED_ENABLE
-oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  if (!is_keyboard_master())
-    return OLED_ROTATION_180;
-  return rotation;
-}
-
-void oled_task_user(void) {
-  if (is_keyboard_master()) {
-    oled_write_ln(read_layer_state(), false);
-    oled_write_ln(read_keylog(), false);
-    oled_write_ln(read_keylogs(), false);
-  } else {
-    oled_write(read_logo(), false);
-  }
-}
-#endif
-
-
-/*---------------------
  * RGB LED
   ---------------------*/
 
@@ -196,24 +155,17 @@ void oled_task_user(void) {
 // { start, length, color }
 const rgblight_segment_t PROGMEM default_layer[]  = RGBLIGHT_LAYER_SEGMENTS(
   // left
-  { 0,  6, GRAD_TEAL_0 },
-  { 6,  6, GRAD_TEAL_1 },
-  { 12, 6, GRAD_TEAL_2 },
-  { 18, 6, GRAD_TEAL_3 },
-  { 28, 1, GRAD_TEAL_3 },
-  { 24, 5, GRAD_TEAL_4 },
-  // right
-  { 29, 6, GRAD_TEAL_0 },
-  { 35, 6, GRAD_TEAL_1 },
-  { 41, 6, GRAD_TEAL_2 },
-  { 47, 6, GRAD_TEAL_3 },
-  { 57, 1, GRAD_TEAL_3 },
-  { 53, 4, GRAD_TEAL_4 }
+  // { 29,  6, GRAD_TEAL_0 },
+  // { 35,  6, GRAD_TEAL_1 },
+  // { 41,  6, GRAD_TEAL_2 },
+  // { 47,  6, GRAD_TEAL_3 },
+  // { 53,  6, GRAD_TEAL_4 }
+  { 0, 58, HSV_TEAL }
 );
-const rgblight_segment_t PROGMEM mac_layer[]      = RGBLIGHT_LAYER_SEGMENTS(  {0, 58, HSV_TEAL } );
-const rgblight_segment_t PROGMEM function_layer[] = RGBLIGHT_LAYER_SEGMENTS(  {0, 58, HSV_RED  } );
-const rgblight_segment_t PROGMEM allow_layer[]    = RGBLIGHT_LAYER_SEGMENTS(  {0, 58, HSV_CYAN } );
-const rgblight_segment_t PROGMEM symbol_layer[]   = RGBLIGHT_LAYER_SEGMENTS(  {0, 58, HSV_TEAL } );
+const rgblight_segment_t PROGMEM mac_layer[]      = RGBLIGHT_LAYER_SEGMENTS(  { 0, 58, HSV_TEAL } );
+const rgblight_segment_t PROGMEM function_layer[] = RGBLIGHT_LAYER_SEGMENTS(  { 0, 58, HSV_RED  } );
+const rgblight_segment_t PROGMEM allow_layer[]    = RGBLIGHT_LAYER_SEGMENTS(  { 0, 58, HSV_CYAN } );
+const rgblight_segment_t PROGMEM symbol_layer[]   = RGBLIGHT_LAYER_SEGMENTS(  { 0, 58, HSV_TEAL } );
 
 const rgblight_segment_t* const PROGMEM _rgb_layers[] = RGBLIGHT_LAYERS_LIST(
     default_layer,
@@ -225,11 +177,6 @@ const rgblight_segment_t* const PROGMEM _rgb_layers[] = RGBLIGHT_LAYERS_LIST(
 // -> keyboard_post_init_user
 
 #endif
-
-void eeconfig_init_user(void) {
-    rgblight_enable_noeeprom();
-    rgblight_sethsv_noeeprom(HSV_TEAL);
-}
 
 layer_state_t default_layer_state_set_user(layer_state_t state) {
     rgblight_set_layer_state(0, layer_state_cmp(state, _DEFAULT));
@@ -247,18 +194,10 @@ layer_state_t layer_state_set_user(layer_state_t state) {
   return state;
 }
 
-
-/*
-* キーボード初期化処理
-*/
 void keyboard_post_init_user(void) {
   rgblight_layers = _rgb_layers;
-  // #if defined(RGBLIGHT_ENABLE)
-  //   int i = 0;
-  //   for (i = 0; i < RGBLED_NUM; i++) {
-  //     // 1~3引数にRGB値を入れる。
-  //     setrgb(30, 187, 215, (LED_TYPE *)&led[i]);
-  //   }
-  //   rgblight_set();
-  // #endif
+  #if defined(RGBLIGHT_ENABLE)
+  rgblight_setrgb_range(RGB_TEAL, 0, 58);
+  rgblight_set();
+  #endif
 }
